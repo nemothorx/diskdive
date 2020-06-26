@@ -5,6 +5,8 @@ visual summary of disks and partitions in terminal
 * each partition in it's own colour
 * key for partition names at bottom (unique according to partition size+name)
 
+Especially useful for visualising multiple partitions across a variety of disk sizes that are then used in a RAID
+
 
 # requirements
 * lsblk
