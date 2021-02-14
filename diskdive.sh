@@ -94,13 +94,13 @@ for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
 
     rpm=$(echo "$smartinfo" | awk '/Rate:/ {print $3}')
     case $rpm in
-        [0-9]*) rpm=" [RPM: $rpm]"  ;;
+        [0-9]*) rpm=" [${rpm} RPM]"  ;;
         Solid)  rpm=" [SSD]"        ;;
     esac
 
     ageh=$(echo "$smartdata" | grep Power.On.Hours | sed -e 's/(.*)//g' | awk '{print $NF}' | tr -d ,)
     if [ -n "$ageh" ] ; then
-        age=" [Age: $(echo "scale=1;$ageh/24" | bc) d]"
+        age=" [$(echo "scale=1;$ageh/24" | bc) days]"
     else
         age=""
     fi
@@ -108,7 +108,7 @@ for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
     temp=$(echo "$smartdata" | grep ^194 | sed -e 's/(.*)//g' | awk '{print $NF}')
     [ -z "$temp" ] && temp=$(echo "$smartdata" | awk '/Temperature:/ {print $2}')
     if [ -n "$temp" ] ; then
-        temp=" [Temp: ${temp}]"
+        temp=" [${temp}°C]"
     else
         temp=""
     fi
@@ -172,3 +172,5 @@ while [ -n "${colcount[$c]}" ] ; do
 done
 
 echo -e "$key" | column
+
+grep ^md /proc/mdstat  | column -t
