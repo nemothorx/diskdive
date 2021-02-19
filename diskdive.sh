@@ -173,4 +173,4 @@ done
 
 echo -e "$key" | column
 
-grep ^md /proc/mdstat  | column -t
+grep "\(^md\|U\)" /proc/mdstat | tr -s " " 
