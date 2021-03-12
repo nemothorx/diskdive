@@ -16,6 +16,10 @@ Especially useful for visualising multiple partitions across a variety of disk s
 * must be run as root
 
 
+# Looks like this... 
+![diskdive_example](https://user-images.githubusercontent.com/455930/110925695-3c3a6300-836f-11eb-80f2-378f49caee30.png)
+
+
 # Bugs
 * should be smarter about identifying required utilities
 * only tested against fairly normal GPT/MBR on x86 arch hardware/kvm with debian and ubuntu
