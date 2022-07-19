@@ -190,7 +190,7 @@ rulercols=$(($columns-2))
 # ...that's a 300 day window of aging to change disks. That ~3years/disk policy
 # with some wiggle room to allow re-spacing of disks
 
-echo " Age Ruler: $rulerdays days ($(echo "scale=1;$rulerdays/$rulercols" | bc) days per character) [oldest=$oldestdisk days]"
+echo "AgeRuler: $rulerdays days ($(echo "scale=1;$rulerdays/$rulercols" | bc) days/char) [oldest=$oldestdisk d - best replaced @1000-1100]"
 # echo "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 "
 for dnum in $(seq 1 $diskcount) ; do
     location=$(($dnum*$rulercols/$diskcount))
