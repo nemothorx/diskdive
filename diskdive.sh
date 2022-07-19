@@ -176,29 +176,33 @@ ideallength=$(($columns/$diskcount))
 agecolumns=$(($ideallength*$diskcount))
 oldestdisk=$(echo "$alldiskages" | sort -g | cut -d" " -f 1 | tail -1)
 
-# show a "ruler" of equal length disk ages, relative to current oldest 
-#
-# TODO: this should be "standard" ruler of, say, 1000 days, divided into
-# relevant number of disks, and then disks age past the end and get a warning
-# colour of being due for replacement
-echo " Age chart: maximum $(echo "scale=1;$oldestdisk/$agecolumns" | bc) days per character (oldest=$oldestdisk days)"
-for d in $(seq 1 $diskcount) ; do
-    for c in $(seq 1 $((ideallength-1))) ; do
-        echo -n " "
-    done
-    echo -n "|"
-done
-echo ""
+rulerdays=900
+rulercols=$(($columns-2))
 
-# TODO: refactor this to suit above when it's TODO is done
-oldbarlimit=0
+# show a "ruler" of age against which disks are positioned
+#
+# this is a "standard" ruler of 900 days, scaled to columns-2, with markings
+# equal to the number of disks. The scale ends at the columns-2 and the final
+# two characters are reserved for 100-133.3333% age "warning" column for "due
+# for change", and over that is "critical" = overdue change. 
+#
+# 900days ~= 2.5 years,  133% of 900 days = 1200 days ~= 3.28 years
+# ...that's a 300 day window of aging to change disks. That ~3years/disk policy
+# with some wiggle room to allow re-spacing of disks
+
+echo " Age Ruler: $rulerdays days ($(echo "scale=1;$rulerdays/$rulercols" | bc) days per character) [oldest=$oldestdisk days]"
+# echo "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 "
+for dnum in $(seq 1 $diskcount) ; do
+    location=$(($dnum*$rulercols/$diskcount))
+    tput cub $columns   # move left
+    tput cuf $((location-1)) ; echo -n "|"    # move right and mark location
+done
+# echo ""
+
+# TODO: test for the "warning" and "critical" columns, and colour appropriately
 echo "$alldiskages" | while read diskage disk ; do
-    # printf to get rounding how I want it
-    barlimit=$(printf "%.f" $(echo "scale=10;($diskage*$agecolumns/$oldestdisk)" | bc))
-    barlength=$((barlimit-oldbarlimit-1))
-    [ "$barlength" -lt 0 ] && barlength=0
-    tput cuf $barlength ; echo -n ${disk:2:1}
-    oldbarlimit=$barlimit
+    barlimit=$(($diskage/($rulerdays/$rulercols)))
+    tput cub $columns ; tput cuf $barlimit ; tput cub 1 ; echo -n ${disk:2:1}
 done
 echo ""
 echo ""
