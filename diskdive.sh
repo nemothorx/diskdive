@@ -41,6 +41,7 @@
 # * only tested against fairly normal GPT/MBR on x86 arch so far
 
 reset=$(tput sgr0)
+origIFS=$IFS
 # TODO: provide arrays for larger values (>16) of `tput colors` 
 declare -a colarray
 declare -a colcount
@@ -71,7 +72,7 @@ bigd=$(lsblk -n -b -d -o SIZE,NAME,TYPE | awk '/disk/ {print $1}' | sort -g | ta
 bigd=$((bigd/1024))	# size in KiB
 
 columns=$(tput cols)
-rawbar="$(printf %${columns}s " ")"
+rawbar="$(printf %${columns}s ".")"
 
 # header output
 echo "  $(date -R)  -  Scale: maximum $(echo "scale=1;$bigd/$columns/1024/1024" | bc) GiB per character"
@@ -100,7 +101,10 @@ for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
 
     ageh=$(echo "$smartdata" | grep Power.On.Hours | sed -e 's/(.*)//g' | awk '{print $NF}' | tr -d ,)
     if [ -n "$ageh" ] ; then
-        age=" [$(echo "scale=1;$ageh/24" | bc) days]"
+        aged="$(echo "scale=1;$ageh/24" | bc)"
+        age=" [$aged days]"
+        alldiskages="$alldiskages
+${aged%.*} $dsk"
     else
         age=""
     fi
@@ -159,10 +163,45 @@ done
 
 echo ""	### line before key
 
-# reset colours
+# reset colours and IFS
 echo -n $reset
+IFS=$origIFS
 
 # echo "$key"
+
+# let's have a bar graph of disk ages
+alldiskages="$(echo "$alldiskages" | grep "sd[a-f]" | sort -g)"   # filter to disks we care about
+diskcount=$(echo "$alldiskages" | wc -l)
+ideallength=$(($columns/$diskcount))
+agecolumns=$(($ideallength*$diskcount))
+oldestdisk=$(echo "$alldiskages" | sort -g | cut -d" " -f 1 | tail -1)
+
+# show a "ruler" of equal length disk ages, relative to current oldest 
+#
+# TODO: this should be "standard" ruler of, say, 1000 days, divided into
+# relevant number of disks, and then disks age past the end and get a warning
+# colour of being due for replacement
+echo " Age chart: maximum $(echo "scale=1;$oldestdisk/$agecolumns" | bc) days per character (oldest=$oldestdisk days)"
+for d in $(seq 1 $diskcount) ; do
+    for c in $(seq 1 $((ideallength-1))) ; do
+        echo -n " "
+    done
+    echo -n "|"
+done
+echo ""
+
+# TODO: refactor this to suit above when it's TODO is done
+oldbarlimit=0
+echo "$alldiskages" | while read diskage disk ; do
+    # printf to get rounding how I want it
+    barlimit=$(printf "%.f" $(echo "scale=10;($diskage*$agecolumns/$oldestdisk)" | bc))
+    barlength=$((barlimit-oldbarlimit-1))
+    [ "$barlength" -lt 0 ] && barlength=0
+    tput cuf $barlength ; echo -n ${disk:2:1}
+    oldbarlimit=$barlimit
+done
+echo ""
+echo ""
 
 
 c=0
@@ -173,4 +212,4 @@ done
 
 echo -e "$key" | column
 
-grep "\(^md\|U\)" /proc/mdstat | tr -s " " 
+grep "\(^md\|U\)" /proc/mdstat | tr -s " "
