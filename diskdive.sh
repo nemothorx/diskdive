@@ -197,9 +197,12 @@ for dnum in $(seq 1 $diskcount) ; do
     tput cub $columns   # move left
     tput cuf $((location-1)) ; echo -n "|"    # move right and mark location
 done
-# echo ""
+# echo ""   # with this echo, the disknumbered number of marks are on a seperate line
 
-# TODO: test for the "warning" and "critical" columns, and colour appropriately
+# TODO: 
+# * have the ruler be colourised rather than | delimited, and have disk
+# indicators overlaid on it, in correct colour
+# * test for the "warning" and "critical" columns, and colour appropriately
 echo "$alldiskages" | while read diskage disk ; do
     barlimit=$(($diskage/($rulerdays/$rulercols)))
     tput cub $columns ; tput cuf $barlimit ; tput cub 1 ; echo -n ${disk:2:1}
