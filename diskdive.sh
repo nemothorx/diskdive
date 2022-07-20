@@ -191,24 +191,36 @@ rulercols=$(($columns-2))
 # with some wiggle room to allow re-spacing of disks
 
 echo "AgeRuler: $rulerdays days ($(echo "scale=1;$rulerdays/$rulercols" | bc) days/char) [oldest=$oldestdisk d - best replaced @1000-1100]"
+oldlocation=0
 # echo "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 "
 for dnum in $(seq 1 $diskcount) ; do
     location=$(($dnum*$rulercols/$diskcount))
-    tput cub $columns   # move left
-    tput cuf $((location-1)) ; echo -n "|"    # move right and mark location
+    width=$((location-oldlocation))
+    tput setab $((dnum%2+4))
+    printf "%${width}s" "|"
+    oldlocation=$location
 done
-# echo ""   # with this echo, the disknumbered number of marks are on a seperate line
-
-# TODO: 
-# * have the ruler be colourised rather than | delimited, and have disk
-# indicators overlaid on it, in correct colour
-# * test for the "warning" and "critical" columns, and colour appropriately
+tput sgr0
 echo "$alldiskages" | while read diskage disk ; do
-    barlimit=$(($diskage/($rulerdays/$rulercols)))
+    # check if our disk age overflows the ruler
+    if [ $diskage -gt $rulerdays ] ; then
+        # check if it overflows a LOT
+        if [ $diskage -gt $((rulerdays*1333/1000)) ] ; then
+            barlimit=$((rulercols+2))
+            tput setaf 1 ; tput rev
+        else
+            barlimit=$((rulercols+1))
+            tput setaf 3 ; tput rev
+        fi
+    else
+        barlimit=$(($diskage/($rulerdays/$rulercols)))
+    fi
     tput cub $columns ; tput cuf $barlimit ; tput cub 1 ; echo -n ${disk:2:1}
 done
+tput sgr0
 echo ""
 echo ""
+
 
 
 c=0
