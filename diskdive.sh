@@ -215,7 +215,9 @@ echo "$alldiskages" | while read diskage disk ; do
     else
         barlimit=$(($diskage/($rulerdays/$rulercols)))
     fi
-    tput cub $columns ; tput cuf $barlimit ; tput cub 1 ; echo -n ${disk:2:1}
+    tput cub $columns ; tput cuf $barlimit  # move to spot
+    [ $barlimit -lt $columns ] && tput cub 1   # adjust spot on the ruler
+    echo -n ${disk:2:1}                 # mark the spot
 done
 tput sgr0
 echo ""
