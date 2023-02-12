@@ -193,6 +193,7 @@ rulercols=$(($columns-2))
 echo "AgeRuler: ${rulerdays}d ($(echo "scale=1;$rulerdays/$rulercols" | bc)d/char - $(echo "scale=1;$rulerdays/$diskcount" | bc)d/segment) [replacement window: 1000-1100d]"
 oldlocation=0
 # echo "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 "
+# create the rule, with $diskcount number of segments
 for dnum in $(seq 1 $diskcount) ; do
     location=$(($dnum*$rulercols/$diskcount))
     width=$((location-oldlocation))
@@ -213,7 +214,7 @@ echo "$alldiskages" | while read diskage disk ; do
             tput setaf 3 ; tput rev
         fi
     else
-        barlimit=$(($diskage/($rulerdays/$rulercols)))
+        barlimit=$(($diskage*$rulercols/$rulerdays))
     fi
     tput cub $columns ; tput cuf $barlimit  # move to spot
     [ $barlimit -lt $columns ] && tput cub 1   # adjust spot on the ruler
@@ -223,6 +224,7 @@ tput sgr0
 echo ""
 echo ""
 
+# echo "$alldiskages"     # debug
 
 
 c=0
