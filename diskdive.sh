@@ -190,7 +190,7 @@ rulercols=$(($columns-2))
 # ...that's a 300 day window of aging to change disks. That ~3years/disk policy
 # with some wiggle room to allow re-spacing of disks
 
-echo "AgeRuler: ${rulerdays}d ($(echo "scale=1;$rulerdays/$rulercols" | bc)d/char - $(echo "scale=1;$rulerdays/$diskcount" | bc)d/segment) [replacement window: 1000-1100d]"
+echo "AgeRuler: ${rulerdays}d ($(echo "scale=1;$rulerdays/$rulercols" | bc)d/char - $(echo "scale=1;$rulerdays/$diskcount" | bc)d/segment) [replace at 1000-1100 (±100) days]"
 oldlocation=0
 # echo "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 "
 # create the rule, with $diskcount number of segments
