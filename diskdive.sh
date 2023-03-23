@@ -62,6 +62,11 @@ do_findparts() {
         msdos)
             join -t: <(parted /dev/$dsk print | grep -e "^ .*\(primary\|logical\)" | awk '{print $1}')  <(parted -m /dev/$dsk unit KiB print | grep "^[0-9]")
             ;;
+        unknown)
+            # we assume whole-disk on this, probably for a raid. we construct our own output then
+            end=$(parted -m /dev/$dsk unit KiB print | cut -d: -f 2)
+            echo "0:0.00kiB:$end:$end:fs-unknown:name-unknown:flags-unknown"
+            ;;
         *)
             echo "Unrecognised partition type $type" >/dev/stderr
     esac
