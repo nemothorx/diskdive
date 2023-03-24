@@ -185,7 +185,7 @@ IFS=$origIFS
 # echo "$key"
 
 # let's have a bar graph of disk ages
-alldiskages="$(echo "$alldiskages" | sort -g)"
+alldiskages="$(echo "$alldiskages" | grep . | sort -g)"
 diskcount=$(echo "$alldiskages" | wc -l)
 ideallength=$(($columns/$diskcount))
 agecolumns=$(($ideallength*$diskcount))
