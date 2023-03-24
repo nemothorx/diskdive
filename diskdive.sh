@@ -53,7 +53,7 @@ do_findparts() {
     # But if we're msdos/MBR, then we only care about primary and logical (not extended)
     # type "loop" may be seen on XEN VMs and can be treated same as GPT
 
-    type=$(parted /dev/$dsk print | awk '/Partition Table:/ {print $3}' )
+    type=$(parted /dev/$dsk print 2>/dev/null | awk '/Partition Table:/ {print $3}' )
 
     case $type in
         gpt|loop)
@@ -66,7 +66,7 @@ do_findparts() {
             # we assume whole-disk on this, probably for a raid. we construct our own output then
             end=$(parted -m /dev/$dsk unit KiB print 2>/dev/null | awk -F: '/unknown/ {print $2}' )
             echo "0:0.00kiB:$end:$end:fs-unknown:name-unknown:flags-unknown"
-            echo "> 0:0.00kiB:$end:$end:fs-unknown:name-unknown:flags-unknown <" >/dev/stderr
+#            echo "> 0:0.00kiB:$end:$end:fs-unknown:name-unknown:flags-unknown <" >/dev/stderr
             ;;
         *)
             echo "Unrecognised partition type $type" >/dev/stderr
@@ -105,7 +105,9 @@ for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
         Solid)  rpm=" [SSD]"        ;;
     esac
 
-    ageh=$(echo "$smartdata" | grep Power.On.Hours | sed -e 's/(.*)//g' | awk '{print $NF}' | tr -d ,)
+    # cut to throw away minutes if the format is "11171h+43m+09.810s"
+    #   TODO: be smarter and turn that into a float? 
+    ageh=$(echo "$smartdata" | grep Power.On.Hours | sed -e 's/(.*)//g' | awk '{print $NF}' | tr -d , | cut -d h -f 1)
     if [ -n "$ageh" ] ; then
         aged="$(echo "scale=1;$ageh/24" | bc)"
         age=" [$aged days]"
