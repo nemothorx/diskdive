@@ -99,23 +99,30 @@ for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
 
     smartdata=$(smartctl -A /dev/$dsk)
 
-    rpm=$(echo "$smartinfo" | awk '/Rate:/ {print $3}')
-    case $rpm in
-        [0-9]*) rpm=" [${rpm} RPM]"  ;;
-        Solid)  rpm=" [SSD]"        ;;
-    esac
-
-    # cut to throw away minutes if the format is "11171h+43m+09.810s"
+    # `cut` to throw away minutes if the format is "11171h+43m+09.810s"
     #   TODO: be smarter and turn that into a float? 
     ageh=$(echo "$smartdata" | grep Power.On.Hours | sed -e 's/(.*)//g' | awk '{print $NF}' | tr -d , | cut -d h -f 1)
     if [ -n "$ageh" ] ; then
         aged="$(echo "scale=1;$ageh/24" | bc)"
         age=" [$aged days]"
-        alldiskages="$alldiskages
-${aged%.*} $dsk"
     else
         age=""
     fi
+
+    rpm=$(echo "$smartinfo" | awk '/Rate:/ {print $3}')
+
+    case $rpm in
+        [0-9]*) 
+            rpm=" [${rpm} RPM]" 
+            # alldiskages only for spinning rust disks
+            if [ -n "$ageh" ] ; then
+                alldiskages="$alldiskages
+${aged%.*} $dsk"
+            fi
+            ;;
+        Solid)  rpm=" [SSD]"        ;;
+    esac
+
 
     temp=$(echo "$smartdata" | grep ^194 | sed -e 's/(.*)//g' | awk '{print $NF}')
     [ -z "$temp" ] && temp=$(echo "$smartdata" | awk '/Temperature:/ {print $2}')
@@ -178,7 +185,7 @@ IFS=$origIFS
 # echo "$key"
 
 # let's have a bar graph of disk ages
-alldiskages="$(echo "$alldiskages" | grep "sd[a-f]" | sort -g)"   # filter to disks we care about
+alldiskages="$(echo "$alldiskages" | sort -g)"
 diskcount=$(echo "$alldiskages" | wc -l)
 ideallength=$(($columns/$diskcount))
 agecolumns=$(($ideallength*$diskcount))
