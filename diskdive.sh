@@ -84,8 +84,6 @@ rawbar="$(printf %${columns}s ".")"
 echo "  $(date -R)  -  Scale: maximum $(echo "scale=1;$bigd/$columns/1024/1024" | bc) GiB per character"
 echo ""
 
-alldiskages="1 sdz"
-
 for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
     echo -n $reset
 
