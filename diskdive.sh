@@ -84,6 +84,8 @@ rawbar="$(printf %${columns}s ".")"
 echo "  $(date -R)  -  Scale: maximum $(echo "scale=1;$bigd/$columns/1024/1024" | bc) GiB per character"
 echo ""
 
+alldiskages="1 sdz"
+
 for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
     echo -n $reset
 
@@ -101,9 +103,14 @@ for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
 
     # `cut` to throw away minutes if the format is "11171h+43m+09.810s"
     #   TODO: be smarter and turn that into a float? 
+    #       ...probably not worth it since we only calc days to a .1 resolution
     ageh=$(echo "$smartdata" | grep Power.On.Hours | sed -e 's/(.*)//g' | awk '{print $NF}' | tr -d , | cut -d h -f 1)
     if [ -n "$ageh" ] ; then
-        aged="$(echo "scale=1;$ageh/24" | bc)"
+        if [ "$ageh" -lt 24 ] ; then
+            aged="0$(echo "scale=1;$ageh/24" | bc)"
+        else
+            aged="$(echo "scale=1;$ageh/24" | bc)"
+        fi
         age=" [$aged days]"
     else
         age=""
@@ -115,6 +122,8 @@ for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
         [0-9]*) 
             rpm=" [${rpm} RPM]" 
             # alldiskages only for spinning rust disks
+            #   TODO: filter USB disks out. But how?
+            #       `parted -m /dev/$dsk print | grep usb` <-- relies on me having a disk partition named with "usb" on it :(
             if [ -n "$ageh" ] ; then
                 alldiskages="$alldiskages
 ${aged%.*} $dsk"
@@ -239,7 +248,6 @@ tput sgr0
 echo ""
 echo ""
 
-# echo "$alldiskages"     # debug
 
 
 c=0
