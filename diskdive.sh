@@ -257,3 +257,9 @@ done
 echo -e "$key" | column
 
 grep "\(^md\|U\)" /proc/mdstat | tr -s " "
+
+
+# future verbosity data: partition sizes by GiB and +sectorcount (which is perfect for gdisk setups)
+# for d in /dev/sd[a-f] ; do echo -n "$d " ; gdisk -l $d | awk '{if ($5 ~ "iB") printf $1":%d=%dGiB ", $3-$2+1, ($3-$2+1)*512/1024/1024/1024 }'; echo "" ; done  | column -t
+# for d in /dev/sd[a-f] ; do echo -n "$d " ; gdisk -l $d | awk '{if ($5 ~ "iB") printf $1":%dGiB(+%d) ", ($3-$2+1)*512/1024/1024/1024, $3-$2+1 }'; echo "" ; done  | column -t
+
