@@ -192,6 +192,10 @@ IFS=$origIFS
 # echo "$key"
 
 # let's have a bar graph of disk ages
+
+# alldiskages="$(echo "$alldiskages" | grep "sd[a-f]" | sort -g)"   # filter to disks we care about
+# TODO: sd[a-f] is dumb, esp since it tends to be something like sd[a-ce-g] if the backup USB is plugged in on boot. 
+# ...better would be a dynamic discovery of disks
 alldiskages="$(echo "$alldiskages" | grep . | sort -g)"
 diskcount=$(echo "$alldiskages" | wc -l)
 ideallength=$(($columns/$diskcount))
