@@ -228,7 +228,8 @@ echo "$alldiskages" | while read diskage disk ; do
     # check if our disk age overflows the ruler
     if [ $diskage -gt $rulerdays ] ; then
         # check if it overflows a LOT
-        if [ $diskage -gt $((rulerdays*1333/1000)) ] ; then
+        #if [ $diskage -gt $((rulerdays*1333/1000)) ] ; then
+        if [ $diskage -gt $((rulerdays+100)) ] ; then
             barlimit=$((rulercols+2))
             tput setaf 1 ; tput rev
         else
@@ -246,6 +247,7 @@ tput sgr0
 echo ""
 echo ""
 
+# echo "$alldiskages"     # debug
 
 
 c=0
