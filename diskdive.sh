@@ -169,7 +169,7 @@ ${aged%.*} $dsk"
 		# this partition type is new. Assign it a colour
 		colcount[$colindex]=$((${colcount[$colindex]}+1))
 		bgcol=${colarray[$colindex]}
-		key="$key ${colindex} $(tput setab $bgcol)    ${reset} ${name} ($psizehum $suf) \n"
+		key="$key ${colindex} $(tput setab $bgcol)   ${reset} ${name} ($psizehum $suf) \n"
 		colindex=$((colindex+1)) # prepare for the next
 	fi
 
