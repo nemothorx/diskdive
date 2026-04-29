@@ -174,7 +174,7 @@ ${aged%.*} $dsk"
 	fi
 
 	tput setab $bgcol
-	tput setaf black
+	tput setaf 0    # 0 = black
 	outbar=$pnum$rawbar
 	echo -n "${outbar:0:$barsegment}"
 #        echo $pnum __ $start __ $end __ $size __ $fs __ $name __ $flags
@@ -202,7 +202,7 @@ ideallength=$(($columns/$diskcount))
 agecolumns=$(($ideallength*$diskcount))
 oldestdisk=$(echo "$alldiskages" | sort -g | cut -d" " -f 1 | tail -1)
 
-rulerdays=900
+rulerdays=1080  # 900 when I have an income. lol
 rulercols=$(($columns-2))
 
 # show a "ruler" of age against which disks are positioned
