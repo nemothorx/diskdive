@@ -122,7 +122,8 @@ for dsk in $(lsblk -n -b -d -o NAME,TYPE | awk '/disk/ {print $1}') ; do
             # alldiskages only for spinning rust disks
             #   TODO: filter USB disks out. But how?
             #       `parted -m /dev/$dsk print | grep usb` <-- relies on me having a disk partition named with "usb" on it :(
-            if [ -n "$ageh" ] ; then
+	    disk_w_swap=$(parted -m /dev/$dsk print | grep -i swap) # only capture disks with a "swap" partition (should be all!)
+            if [ -n "$ageh" ] && [ -n "$disk_w_swap" ] ; then
                 alldiskages="$alldiskages
 ${aged%.*} $dsk"
             fi
@@ -262,7 +263,8 @@ done
 
 echo -e "$key" | column
 
-grep "\(^md\|U\)" /proc/mdstat | tr -s " "
+# grep "\(^md\|U\)" /proc/mdstat | tr -s " "
+cat /proc/mdstat  | awk '/active/ {print} /blocks/ {print "  ",$1/1048576" GB, "$5,$6,$7,$8,$9,$10,$11,$12}' | ccze -A
 
 
 # future verbosity data: partition sizes by GiB and +sectorcount (which is perfect for gdisk setups)
